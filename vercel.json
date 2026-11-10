@@ -4,8 +4,8 @@
   "framework": null,
   "rewrites": [
     { "source": "/api/public/app-version", "destination": "/app-version.json" },
-    { "source": "/_serverFn/:path*", "destination": "https://workflow-whisperer-36.lovable.app/_serverFn/:path*" },
-    { "source": "/api/:path*", "destination": "https://workflow-whisperer-36.lovable.app/api/:path*" },
+    { "source": "/_serverFn/:path*", "destination": "https://actes-crm.lovable.app/_serverFn/:path*" },
+    { "source": "/api/:path*", "destination": "https://actes-crm.lovable.app/api/:path*" },
     { "source": "/((?!assets/|sw\\.js|workbox-|app-version\\.json|\\.well-known/).*)", "destination": "/_shell.html" }
   ],
   "headers": [
