@@ -21,3 +21,4 @@
 - n8n base URL is the fixed constant `N8N_URL` in `src/lib/server-url-rules.ts` (not editable). The frontend URL lives in app_settings key `frontend_url` (`text_value`); `FrontendRedirect` sends installed PWAs on the default published host there — keep the old host published so old installs follow a move.
 - Forced update: each build gets `__APP_VERSION__` (vite define), served by `/api/public/app-version`; `UpdateGate` in __root blocks the app until the service worker pulls the new build (skipped offline, one attempt per version per session).
 - The app is hosted only on its Lovable published URL (no Vercel); old hosts are listed in `LEGACY_FRONTEND_HOSTS` so `FrontendRedirect` moves installed copies opened there to the current frontend URL.
+- Day/night usage choice (bot step `day_night`, stored as `|N30/N50/N70` suffix on session `night_hours`) shifts the recommended system by battery; `tiersDayNight` in QuoteBuilder is its port — change both together.

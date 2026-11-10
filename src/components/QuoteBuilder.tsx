@@ -177,6 +177,27 @@ export const tiersFrom = (opts: Preset[]): Tiers | null => {
   return { low: [...fam].reverse().find((p) => dailyProduction(p) < r), rec, high: fam.find((p) => dailyProduction(p) > r) };
 };
 void SIZE_ORDER;
+// Day/night usage (same as bot ACTES_DAY_NIGHT): night 70% → same inverter, next system with more battery;
+// day 70% → next with less battery; 50/50 → unchanged. Then less/more are rebuilt around the new pick.
+export type DayNight = 30 | 50 | 70;
+export const batteryOf = (p: Preset) => Number((p.title.match(/\((\d+(?:\.\d+)?) كيلو\)/) ?? p.title.match(/(?:بطارية|بايلونتك) ([\d.]+)/) ?? [])[1] ?? 0);
+export const shiftDayNight = (rec: Preset, night: DayNight): Preset => {
+  if (night === 50) return rec;
+  const fam = PRESETS.filter((p) => p.group === rec.group && (p.type ?? "res") === (rec.type ?? "res"));
+  const more = night === 70, b = batteryOf(rec);
+  if (rec.type !== "com") {
+    const i = fam.indexOf(rec), dir = more ? 1 : -1;
+    for (let j = i + dir; j >= 0 && j < fam.length; j += dir) if (fam[j]!.title !== rec.title) return fam[j]!;
+    return rec;
+  }
+  const d = dailyProduction(rec);
+  return [...fam].sort((x, y) => dailyProduction(x) - dailyProduction(y)).find((p) => dailyProduction(p) >= d - E && (more ? batteryOf(p) > b : batteryOf(p) < b)) ?? rec;
+};
+export const tiersDayNight = (t: Tiers | null, night: DayNight): Tiers | null => {
+  if (!t || night === 50) return t;
+  const r = shiftDayNight(t.rec, night);
+  return r === t.rec ? t : tiersFrom([r]);
+};
 export const tieredOptions = (path: "res" | "com", m: ComMethod, v: number, price = DEFAULT_KWH_PRICE) =>
   tiersFrom(path === "res" ? optionsForResBill(v, price) : optionsForCom(m, v, price));
 // Bot-style inverter choice for business systems: sizes that cover the need, then single/three phase.
@@ -352,6 +373,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
   const [path, setPath] = useState<"res" | "com" | null>(null);
   const [comM, setComM] = useState<ComMethod | null>(null);
   const [tiers, setTiers] = useState<Tiers | null>(null);
+  const [dn, setDn] = useState<DayNight>(50);
   const [invs, setInvs] = useState<InvChoice[] | null>(null);
   const [invKw, setInvKw] = useState<InvChoice | null>(null);
   const getKwh = useServerFn(getKwhPrice);
@@ -518,7 +540,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
     } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
   };
   // Only the recommended system → load it straight away (no independence step).
-  const showTiers = (t: Tiers | null) => { if (t && !t.low && !t.high) { setTiers(null); loadPreset(t.rec); } else setTiers(t); };
+  const showTiers = (t0: Tiers | null) => { const t = tiersDayNight(t0, dn); if (t && !t.low && !t.high) { setTiers(null); loadPreset(t.rec); } else setTiers(t); };
   function loadPreset(p: Preset) {
     // Like the bot: every linked line takes name, specs, unit and price live from the catalog.
     const out: Line[] = p.lines ? p.lines.map((l) => {
@@ -556,6 +578,9 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
             ))}
             {path === "com" && (["bill", "kwh", "diesel"] as const).map((m) => (
               <button key={m} type="button" onClick={() => { setComM(m); setDaily(""); }} className={`rounded-lg border px-2 py-1.5 text-xs font-semibold ${comM === m ? "border-primary bg-primary/10 text-primary" : "bg-card"}`}>{m === "bill" ? "فاتورة" : m === "kwh" ? "استهلاك شهري" : "الديزل"}</button>
+            ))}
+            {(path === "res" || (path === "com" && comM)) && ([[30, "☀️ نهار 70 / ليل 30"], [50, "⚖️ 50 / 50"], [70, "🌙 ليل 70 / نهار 30"]] as const).map(([v, label]) => (
+              <button key={v} type="button" onClick={() => setDn(v)} className={`rounded-lg border px-2 py-1.5 text-xs font-semibold ${dn === v ? "border-primary bg-primary/10 text-primary" : "bg-card"}`}>{label}</button>
             ))}
             {(path === "res" || (path === "com" && comM)) && (
               <form onSubmit={(e) => { e.preventDefault(); const n = Number(daily); if (!(n > 0)) return; setInvKw(null); const opts = path === "res" ? optionsForResBill(n, kwhPrice) : optionsForCom(comM ?? "bill", n, kwhPrice); const ic = inverterChoices(opts); if (ic.length) { setTiers(null); setInvs(ic); return; } setInvs(null); const t = tiersFrom(opts); if (!t) { setTiers(null); return setMsg("لا توجد منظومة مناسبة — يُحوّل للموظف المختص"); } showTiers(t); }} className="flex items-center gap-1">
