@@ -3,8 +3,8 @@
   {"capability":"schema","source":"drizzle/migrations 0000-0003 (applied as one migration)","outcome":"migrate","status":"verified","next_action":null},
   {"capability":"records","source":"data/*.csv snapshot 2026-10-31","outcome":"migrate","status":"verified","next_action":"63 customers, 3151 messages, 106 catalog items, 2 quotes, 475 button locks, 1 setting loaded"},
   {"capability":"uploaded files","source":"data/files/crm-attachments","outcome":"migrate","status":"verified","next_action":"7 PDFs uploaded, chat links re-signed"},
-  {"capability":"auth","source":"single dashboard password (DASHBOARD_PASSWORD)","outcome":"keep","status":"pending","next_action":"DASHBOARD_PASSWORD secret from user"},
-  {"capability":"n8n bot endpoints","source":"/api/public/bot-*","outcome":"keep","status":"pending","next_action":"BOT_INGEST_SECRET secret; publish; point n8n at this project's published URL"},
+  {"capability":"auth","source":"single dashboard password (DASHBOARD_PASSWORD)","outcome":"keep","status":"verified","next_action":null},
+  {"capability":"n8n bot endpoints","source":"/api/public/bot-*","outcome":"keep","status":"pending","next_action":"secret saved; publish; point n8n at this project's published URL"},
   {"capability":"github backup job","source":"/api/public/jobs/github-backup","outcome":"keep","status":"pending","next_action":"daily schedule created; needs GitHub connector (GITHUB_API_KEY)"},
   {"capability":"AI","source":"LOVABLE_API_KEY","outcome":"keep","status":"verified","next_action":null},
   {"capability":"cutover","source":"n8n + vercel.json + DEFAULT_FRONTEND_URL + start.ts trusted origin point to old host workflow-whisperer-36","outcome":"keep","status":"pending","next_action":"user decides whether to move these to the new address after publish"}
