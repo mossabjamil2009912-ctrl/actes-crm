@@ -29,7 +29,7 @@ https://n8n.srv1994780.hstgr.cloud/workflow/twQV31OWjucubtx2
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://workflow-whisperer-36.lovable.app
+**Live app**: https://actes-crm.lovable.app
 
 ## Build with Lovable
 
