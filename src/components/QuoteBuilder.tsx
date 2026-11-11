@@ -579,7 +579,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
             {path === "com" && (["bill", "kwh", "diesel"] as const).map((m) => (
               <button key={m} type="button" onClick={() => { setComM(m); setDaily(""); }} className={`rounded-lg border px-2 py-1.5 text-xs font-semibold ${comM === m ? "border-primary bg-primary/10 text-primary" : "bg-card"}`}>{m === "bill" ? "فاتورة" : m === "kwh" ? "استهلاك شهري" : "الديزل"}</button>
             ))}
-            {(path === "res" || (path === "com" && comM)) && ([[30, "☀️ نهار 70 / ليل 30"], [50, "⚖️ 50 / 50"], [70, "🌙 ليل 70 / نهار 30"]] as const).map(([v, label]) => (
+            {(path === "res" || (path === "com" && comM)) && ([[30, "نهار 70 / ليل 30"], [50, "50 / 50"], [70, "ليل 70 / نهار 30"]] as const).map(([v, label]) => (
               <button key={v} type="button" onClick={() => setDn(v)} className={`rounded-lg border px-2 py-1.5 text-xs font-semibold ${dn === v ? "border-primary bg-primary/10 text-primary" : "bg-card"}`}>{label}</button>
             ))}
             {(path === "res" || (path === "com" && comM)) && (
