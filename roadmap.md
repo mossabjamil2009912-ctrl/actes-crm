@@ -33,3 +33,4 @@
 - [x] إعدادات الاتصال: رابط خادم البوت مركزي
 - [x] استضافة الواجهة على Vercel مع بقاء الخادم في Lovable
 - [x] سؤال إلغاء Backend: أُجيب (لا يُلغى، Vercel يعتمد عليه)
+- [ ] Connect n8n in the new workspace (Nov 11 move)
