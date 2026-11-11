@@ -21,7 +21,16 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 // Start installs this automatically when src/start.ts is absent; defining the
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
-const isTrustedOrigin = (origin: string, reqUrl: string) => origin === new URL(reqUrl).origin;
+// Also trust the old Vercel-hosted copy (its vercel.json proxies /_serverFn here) so installed apps keep working.
+const isTrustedOrigin = (origin: string, reqUrl: string) => {
+  if (origin === new URL(reqUrl).origin) return true;
+  try {
+    const u = new URL(origin);
+    return u.protocol === "https:" && u.hostname === "workflow-whisperer-36-1dc89c79.vercel.app";
+  } catch {
+    return false;
+  }
+};
 
 const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
