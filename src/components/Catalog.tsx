@@ -74,9 +74,10 @@ export function Catalog({ pw }: { pw: string }) {
   const [userCats, setUserCats] = useState<[string, string][]>([]);
   useEffect(() => { try { setUserCats(JSON.parse(localStorage.getItem("actes-user-cats") || "[]")); } catch { /* ignore */ } }, []);
   const extraCats = [...EXTRA_CATS, ...userCats];
-  const addCategory = () => {
-    const t = window.prompt("اسم الفئة الجديدة")?.trim();
-    if (!t) return;
+  const [catDlg, setCatDlg] = useState(false);
+  const addCategory = () => setCatDlg(true);
+  const saveCategory = (t: string) => {
+    setCatDlg(false);
     const next: [string, string][] = [...userCats, ["cat_" + Date.now().toString(36), t]];
     setUserCats(next); localStorage.setItem("actes-user-cats", JSON.stringify(next));
   };
@@ -174,6 +175,7 @@ export function Catalog({ pw }: { pw: string }) {
       </div>
       {editing && <EditCard key={editing.key} r={editing} pw={pw} onClose={() => setEditing(null)} onSaved={() => { refetch(); setEditing(null); }} />}
       {adding !== false && <NewItemCard rows={rows} pw={pw} extraCats={extraCats} initialCat={adding || undefined} onClose={() => setAdding(false)} onSaved={async (key) => { setAdding(false); await refetch(); setRuleKey(key); }} />}
+      {catDlg && <NewCategoryDialog onClose={() => setCatDlg(false)} onSave={saveCategory} />}
       {ruleItem && <AutoRulesDialog key={ruleItem.key} item={ruleItem as CatItem} items={rows as CatItem[]} pw={pw} onClose={() => setRuleKey(null)} onSaved={() => { refetch(); setRuleKey(null); }} />}
     </div>
   );
@@ -259,6 +261,7 @@ function NewItemCard({ rows, pw, extraCats, initialCat, onClose, onSaved }: { ro
   const [specs, setSpecs] = useState<string[]>([""]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [catDlg, setCatDlg] = useState(false);
 
   async function submit() {
     if (!name.trim()) return setMsg("اكتب اسم الصنف");
@@ -278,6 +281,7 @@ function NewItemCard({ rows, pw, extraCats, initialCat, onClose, onSaved }: { ro
           <span className="flex-1 truncate text-sm font-bold">إضافة صنف جديد</span>
           <button onClick={onClose} aria-label="إغلاق" className="rounded-md p-1 hover:bg-muted"><X className="h-5 w-5" /></button>
         </div>
+        {catDlg && <NewCategoryDialog onClose={() => setCatDlg(false)} onSave={(t) => { const k = "cat_" + Date.now().toString(36); setNewCats((c) => [...c, [k, t]]); setCat(k); setCatDlg(false); }} />}
         {msg && <p className="px-3 pt-2 text-xs text-destructive">{msg}</p>}
         <div className="flex-1 space-y-3 overflow-y-auto p-3">
           <label className="block text-xs text-muted-foreground">اسم الصنف
@@ -294,10 +298,7 @@ function NewItemCard({ rows, pw, extraCats, initialCat, onClose, onSaved }: { ro
           <label className="block text-xs text-muted-foreground">الفئة
             <select value={cat} onChange={(e) => {
               if (e.target.value !== "__new") return setCat(e.target.value);
-              const t = window.prompt("اسم الفئة الجديدة")?.trim();
-              if (!t) return;
-              const k = "cat_" + Date.now().toString(36);
-              setNewCats((c) => [...c, [k, t]]); setCat(k);
+              setCatDlg(true);
             }} className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground">
               {cats.map(([k, t]) => <option key={k} value={k}>{t}</option>)}
               <option value="__new">+ إضافة فئة جديدة...</option>
@@ -316,6 +317,30 @@ function NewItemCard({ rows, pw, extraCats, initialCat, onClose, onSaved }: { ro
             <button onClick={() => setSpecs([...specs, ""])} className="mt-2 flex items-center gap-1 rounded-md border px-3 py-1 text-xs"><Plus className="h-3.5 w-3.5" /> إضافة سطر</button>
           </div>
           <p className="text-[11px] text-muted-foreground">بعد الحفظ تختار لأي عروض يُضاف هذا الصنف تلقائيًا.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewCategoryDialog({ onClose, onSave }: { onClose: () => void; onSave: (t: string) => void }) {
+  const [t, setT] = useState("");
+  const [err, setErr] = useState("");
+  const save = () => { const v = t.trim(); if (!v) return setErr("اكتب اسم الفئة"); onSave(v); };
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-background/80 sm:items-center" onClick={(e) => { e.stopPropagation(); onClose(); }}>
+      <div className="w-full max-w-lg rounded-t-2xl border bg-card sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 border-b p-3">
+          <button onClick={save} className="flex items-center gap-1 rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground"><Save className="h-4 w-4" /> حفظ</button>
+          <span className="flex-1 truncate text-sm font-bold">إضافة فئة جديدة</span>
+          <button onClick={onClose} aria-label="إغلاق" className="rounded-md p-1 hover:bg-muted"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="space-y-2 p-3">
+          {err && <p className="text-xs text-destructive">{err}</p>}
+          <label className="block text-xs text-muted-foreground">اسم الفئة
+            <input autoFocus value={t} onChange={(e) => setT(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} placeholder="مثال: قواعد الألواح" className="mt-1 w-full rounded-md border bg-background px-2 py-2 text-sm text-foreground" />
+          </label>
+          <button onClick={onClose} className="w-full rounded-md border py-1.5 text-sm text-muted-foreground hover:bg-muted">إلغاء</button>
         </div>
       </div>
     </div>
