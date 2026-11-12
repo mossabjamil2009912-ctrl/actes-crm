@@ -62,7 +62,9 @@ function Folder({ title, count, open, onToggle, level, children }: { title: stri
 export function Catalog({ pw }: { pw: string }) {
   const list = useServerFn(listCatalog);
   const del = useServerFn(deleteCatalogItem);
-  const { data: rows = [], refetch } = useQuery(offlineQuery({ queryKey: ["catalog"], queryFn: () => list({ data: { pw } }) }));
+  const { data, refetch } = useQuery(offlineQuery({ queryKey: ["catalog"], queryFn: () => list({ data: { pw } }) }));
+  const rows: Row[] = data ?? [];
+  const loaded = data !== undefined;
   const onDelete = async (r: Row) => {
     if (!window.confirm(`حذف "${r.name}" نهائياً؟`)) return;
     try { await del({ data: { pw, key: r.key } }); await refetch(); } catch (e) { alert((e as Error).message); }
@@ -86,15 +88,19 @@ export function Catalog({ pw }: { pw: string }) {
   const [openSet, setOpenSet] = useState<Set<string>>(new Set());
   const shown = rows.filter((r) => r.kind === tab && (r.name.includes(q) || r.key.includes(q)));
   const isOpen = (id: string) => !!q || openSet.has(id);
-  const toggle = (id: string) => setOpenSet((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  // Opening a folder closes every other folder except its own parents.
+  const toggle = (id: string) => setOpenSet((s) => {
+    if (s.has(id)) { const n = new Set(s); n.delete(id); for (const k of s) if (k.startsWith(id + ":")) n.delete(k); return n; }
+    return new Set([...[...s].filter((k) => id.startsWith(k + ":")), id]);
+  });
 
   const others = [...new Set(shown.map(sectionOf))].filter((c) => !SECTIONS.some(([k]) => k === c));
   const groups: { id: string; title: string; rows: Row[] }[] = [
     ...SECTIONS.map(([id, title]) => ({ id, title, rows: shown.filter((r) => sectionOf(r) === id) })),
     ...others.map((c) => ({ id: c, title: shown.find((r) => r.category === c)?.category_title ?? c, rows: shown.filter((r) => sectionOf(r) === c) })),
   ];
-  if (tab === "item" && !q) for (const [id, title] of extraCats) if (!groups.some((g) => g.id === id)) groups.push({ id, title, rows: [] });
-  const visible = groups.filter((g) => g.rows.length || (tab === "item" && !q && extraCats.some(([k]) => k === g.id)));
+  if (tab === "item" && !q && loaded) for (const [id, title] of extraCats) if (!groups.some((g) => g.id === id)) groups.push({ id, title, rows: [] });
+  const visible = groups.filter((g) => g.rows.length || (tab === "item" && !q && loaded && extraCats.some(([k]) => k === g.id)));
 
   const card = (r: Row) => (
     <div key={r.key} className={`rounded-xl border bg-card p-3 ${r.active ? "" : "opacity-60"}`}>
