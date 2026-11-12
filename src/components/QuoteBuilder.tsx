@@ -644,7 +644,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
           </div>
         )}
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
-          {[...TABLES.slice(0, -1), ...Object.keys(byCat).filter((k) => !TABLES.some((t) => t.k === k)).map((k) => ({ k, t: byCat[k][0]?.category_title ?? k, i: Box })), TABLES[TABLES.length - 1]!].map((t) => { const n = countIn(t.k), all = t.k === "custom" ? 0 : byCat[t.k]?.length ?? 0; return (
+          {[...TABLES.slice(0, -1), ...Object.keys(byCat).filter((k) => !TABLES.some((t) => t.k === k)).map((k) => ({ k, t: byCat[k]?.[0]?.category_title ?? k, i: Box })), TABLES[TABLES.length - 1]!].map((t) => { const n = countIn(t.k), all = t.k === "custom" ? 0 : byCat[t.k]?.length ?? 0; return (
             <button key={t.k} onClick={() => { setActive(t.k); setQ(""); }}
               className={`group relative flex items-center gap-1.5 rounded-lg border px-2 py-1 text-right transition-all duration-200 hover:shadow-md ${active === t.k ? "border-primary bg-primary text-primary-foreground shadow" : "bg-card"}`}>
               <t.i className={`h-3.5 w-3.5 shrink-0 ${active === t.k ? "" : "text-primary"}`} />
