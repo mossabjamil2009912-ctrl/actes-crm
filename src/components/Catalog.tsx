@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, FileText, Save, Pencil, X, Plus, Trash2, ChevronLeft, Zap } from "lucide-react";
@@ -70,7 +70,16 @@ export function Catalog({ pw }: { pw: string }) {
   const [tab, setTab] = useState<"item" | "datasheet">("item");
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Row | null>(null);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState<string | false>(false);
+  const [userCats, setUserCats] = useState<[string, string][]>([]);
+  useEffect(() => { try { setUserCats(JSON.parse(localStorage.getItem("actes-user-cats") || "[]")); } catch { /* ignore */ } }, []);
+  const extraCats = [...EXTRA_CATS, ...userCats];
+  const addCategory = () => {
+    const t = window.prompt("اسم الفئة الجديدة")?.trim();
+    if (!t) return;
+    const next: [string, string][] = [...userCats, ["cat_" + Date.now().toString(36), t]];
+    setUserCats(next); localStorage.setItem("actes-user-cats", JSON.stringify(next));
+  };
   const [ruleKey, setRuleKey] = useState<string | null>(null);
   const ruleItem = ruleKey ? rows.find((r) => r.key === ruleKey) : null;
   const [openSet, setOpenSet] = useState<Set<string>>(new Set());
@@ -82,7 +91,9 @@ export function Catalog({ pw }: { pw: string }) {
   const groups: { id: string; title: string; rows: Row[] }[] = [
     ...SECTIONS.map(([id, title]) => ({ id, title, rows: shown.filter((r) => sectionOf(r) === id) })),
     ...others.map((c) => ({ id: c, title: shown.find((r) => r.category === c)?.category_title ?? c, rows: shown.filter((r) => sectionOf(r) === c) })),
-  ].filter((g) => g.rows.length);
+  ];
+  if (tab === "item" && !q) for (const [id, title] of extraCats) if (!groups.some((g) => g.id === id)) groups.push({ id, title, rows: [] });
+  const visible = groups.filter((g) => g.rows.length || (tab === "item" && !q && extraCats.some(([k]) => k === g.id)));
 
   const card = (r: Row) => (
     <div key={r.key} className={`rounded-xl border bg-card p-3 ${r.active ? "" : "opacity-60"}`}>
@@ -121,9 +132,14 @@ export function Catalog({ pw }: { pw: string }) {
           <button onClick={() => setTab("datasheet")} className={`rounded-lg py-2 text-sm ${tab === "datasheet" ? "bg-primary font-semibold text-primary-foreground" : "bg-muted"}`}>الكتالوجات PDF</button>
         </div>
         {tab === "item" && (
-          <button onClick={() => setAdding(true)} className="flex w-full items-center justify-center gap-1 rounded-lg border-2 border-dashed border-primary py-2 text-sm font-semibold text-primary">
-            <Plus className="h-4 w-4" /> إضافة صنف
-          </button>
+          <div className="flex justify-end gap-1.5">
+            <button onClick={() => setAdding("")} className="flex items-center gap-1 rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground">
+              <Plus className="h-3.5 w-3.5" /> صنف
+            </button>
+            <button onClick={addCategory} className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary">
+              <Plus className="h-3.5 w-3.5" /> فئة
+            </button>
+          </div>
         )}
         <div className="relative">
           <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -131,13 +147,15 @@ export function Catalog({ pw }: { pw: string }) {
         </div>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto px-3 pb-6">
-        {groups.map((g) => {
+        {visible.map((g) => {
           const base = g.id === "racks" ? ["Pylontech", "Hithium"] : [];
           const brands = [...new Set([...base, ...g.rows.map(brandOf)])].sort((a, b) => brandRank(a) - brandRank(b));
           const id = tab + ":" + g.id;
           return (
             <Folder key={id} title={g.title} count={g.rows.length} open={isOpen(id)} onToggle={() => toggle(id)} level={0}>
-              {!g.rows.length && <p className="py-3 text-center text-xs text-muted-foreground">لا توجد كتالوجات</p>}
+              {!g.rows.length && (tab === "item"
+                ? <button onClick={() => setAdding(g.id)} className="mx-auto my-2 flex items-center gap-1 rounded-full border border-primary px-3 py-1 text-xs text-primary"><Plus className="h-3.5 w-3.5" /> إضافة صنف هنا</button>
+                : <p className="py-3 text-center text-xs text-muted-foreground">لا توجد كتالوجات</p>)}
               {brands.length <= 1
                 ? g.rows.map(card)
                 : brands.map((b) => {
@@ -155,7 +173,7 @@ export function Catalog({ pw }: { pw: string }) {
         {tab === "item" && !shown.length && <p className="py-10 text-center text-sm text-muted-foreground">لا توجد أصناف</p>}
       </div>
       {editing && <EditCard key={editing.key} r={editing} pw={pw} onClose={() => setEditing(null)} onSaved={() => { refetch(); setEditing(null); }} />}
-      {adding && <NewItemCard rows={rows} pw={pw} onClose={() => setAdding(false)} onSaved={async (key) => { setAdding(false); await refetch(); setRuleKey(key); }} />}
+      {adding !== false && <NewItemCard rows={rows} pw={pw} extraCats={extraCats} initialCat={adding || undefined} onClose={() => setAdding(false)} onSaved={async (key) => { setAdding(false); await refetch(); setRuleKey(key); }} />}
       {ruleItem && <AutoRulesDialog key={ruleItem.key} item={ruleItem as CatItem} items={rows as CatItem[]} pw={pw} onClose={() => setRuleKey(null)} onSaved={() => { refetch(); setRuleKey(null); }} />}
     </div>
   );
@@ -228,16 +246,16 @@ function EditCard({ r, pw, onClose, onSaved }: { r: Row; pw: string; onClose: ()
   );
 }
 
-function NewItemCard({ rows, pw, onClose, onSaved }: { rows: Row[]; pw: string; onClose: () => void; onSaved: (key: string) => void }) {
+function NewItemCard({ rows, pw, extraCats, initialCat, onClose, onSaved }: { rows: Row[]; pw: string; extraCats: [string, string][]; initialCat?: string | undefined; onClose: () => void; onSaved: (key: string) => void }) {
   const create = useServerFn(createCatalogItem);
   const base = new Map(rows.filter((r) => r.kind === "item").map((r) => [r.category, r.category_title ?? r.category]));
-  for (const [k, t] of EXTRA_CATS) if (!base.has(k)) base.set(k, t);
+  for (const [k, t] of extraCats) if (!base.has(k)) base.set(k, t);
   const [newCats, setNewCats] = useState<[string, string][]>([]);
   const cats = [...base.entries(), ...newCats];
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [unit, setUnit] = useState("حبة");
-  const [cat, setCat] = useState(cats[0]?.[0] ?? "other");
+  const [cat, setCat] = useState(initialCat ?? cats[0]?.[0] ?? "other");
   const [specs, setSpecs] = useState<string[]>([""]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
