@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "app.lovable.actes_crm.twa",
       "sha256_cert_fingerprints": [
-        "82:1E:76:F9:8E:BB:29:F0:2F:16:52:54:9A:6E:8E:8A:BD:49:69:0B:FD:73:47:BC:4E:B5:C7:DF:9B:A6:23:6D"
+        "82:1E:76:F9:8E:BB:29:F0:2F:16:52:54:9A:6E:8E:8A:BD:49:69:0B:FD:73:47:BC:4E:B5:C7:DF:9B:A6:23:6D",
+        "7E:AF:17:57:98:01:9C:E0:8E:1E:32:88:82:CB:38:84:22:28:25:09:5B:76:89:DC:93:21:42:64:89:C6:48:53"
       ]
     }
   },
