@@ -21,6 +21,8 @@ const TABLES: { k: string; t: string; i: typeof Zap }[] = [
   { k: "stands", t: "استندات المنظومات", i: Home },
   { k: "battery_controls", t: "كنترولات وحماية البطاريات", i: Cpu },
   { k: "cables", t: "الكنشات والكابلات", i: Cable },
+  { k: "panel_mounts", t: "قواعد الألواح", i: Home },
+  { k: "install_accessories", t: "إكسسوارات تركيب", i: Wrench },
   { k: "custom", t: "أصناف مخصصة وخدمات", i: Wrench },
 ];
 
@@ -642,7 +644,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
           </div>
         )}
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
-          {TABLES.map((t) => { const n = countIn(t.k), all = t.k === "custom" ? 0 : byCat[t.k]?.length ?? 0; return (
+          {[...TABLES.slice(0, -1), ...Object.keys(byCat).filter((k) => !TABLES.some((t) => t.k === k)).map((k) => ({ k, t: byCat[k][0]?.category_title ?? k, i: Box })), TABLES[TABLES.length - 1]].map((t) => { const n = countIn(t.k), all = t.k === "custom" ? 0 : byCat[t.k]?.length ?? 0; return (
             <button key={t.k} onClick={() => { setActive(t.k); setQ(""); }}
               className={`group relative flex items-center gap-1.5 rounded-lg border px-2 py-1 text-right transition-all duration-200 hover:shadow-md ${active === t.k ? "border-primary bg-primary text-primary-foreground shadow" : "bg-card"}`}>
               <t.i className={`h-3.5 w-3.5 shrink-0 ${active === t.k ? "" : "text-primary"}`} />
@@ -654,7 +656,7 @@ export function QuoteBuilder({ pw, initialCustomerId }: { pw: string; initialCus
 
         <div key={active} className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center gap-2 border-b bg-muted/40 p-2.5">
-            <span className="font-bold">{TABLES.find((t) => t.k === active)?.t}</span>
+            <span className="font-bold">{TABLES.find((t) => t.k === active)?.t ?? byCat[active]?.[0]?.category_title}</span>
             {active !== "custom" && <label className="mr-auto flex items-center gap-1 rounded-lg border bg-background px-2"><Search className="h-4 w-4 text-muted-foreground" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث..." className="w-36 bg-transparent py-1 text-sm outline-none" /></label>}
           </div>
           {active === "custom" ? (

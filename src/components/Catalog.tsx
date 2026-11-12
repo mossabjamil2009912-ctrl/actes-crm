@@ -26,6 +26,7 @@ function brandOf(r: Row): string {
 
 // Display order of sections and brands inside them (UI only; DB categories unchanged).
 const SECTIONS: [string, string][] = [["panels", "الألواح"], ["inverters", "الإنفرترات"], ["batteries", "البطاريات"], ["cabinets", "الكبائن"], ["racks", "الراكات"]];
+export const EXTRA_CATS: [string, string][] = [["panel_mounts", "قواعد الألواح"], ["install_accessories", "إكسسوارات تركيب"]];
 const BRAND_ORDER = ["Li Power", "Solis", "Deye", "Pylontech", "Hithium", "Suntech", ""];
 function sectionOf(r: Row): string {
   const t = (r.key + " " + r.name).toUpperCase();
@@ -229,7 +230,10 @@ function EditCard({ r, pw, onClose, onSaved }: { r: Row; pw: string; onClose: ()
 
 function NewItemCard({ rows, pw, onClose, onSaved }: { rows: Row[]; pw: string; onClose: () => void; onSaved: (key: string) => void }) {
   const create = useServerFn(createCatalogItem);
-  const cats = [...new Map(rows.filter((r) => r.kind === "item").map((r) => [r.category, r.category_title ?? r.category])).entries()];
+  const base = new Map(rows.filter((r) => r.kind === "item").map((r) => [r.category, r.category_title ?? r.category]));
+  for (const [k, t] of EXTRA_CATS) if (!base.has(k)) base.set(k, t);
+  const [newCats, setNewCats] = useState<[string, string][]>([]);
+  const cats = [...base.entries(), ...newCats];
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [unit, setUnit] = useState("حبة");
@@ -270,8 +274,15 @@ function NewItemCard({ rows, pw, onClose, onSaved }: { rows: Row[]; pw: string; 
             </label>
           </div>
           <label className="block text-xs text-muted-foreground">الفئة
-            <select value={cat} onChange={(e) => setCat(e.target.value)} className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground">
+            <select value={cat} onChange={(e) => {
+              if (e.target.value !== "__new") return setCat(e.target.value);
+              const t = window.prompt("اسم الفئة الجديدة")?.trim();
+              if (!t) return;
+              const k = "cat_" + Date.now().toString(36);
+              setNewCats((c) => [...c, [k, t]]); setCat(k);
+            }} className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground">
               {cats.map(([k, t]) => <option key={k} value={k}>{t}</option>)}
+              <option value="__new">+ إضافة فئة جديدة...</option>
             </select>
           </label>
           <div>
