@@ -22,7 +22,7 @@ export function ConnectionSettings({ pw }: { pw: string }) {
 
   const run = async (fn: () => Promise<{ ok: boolean; message: string; url?: string }>) => {
     setBusy(true); setMsg(null);
-    try { const r = await fn(); setMsg({ ok: r.ok, t: r.message }); if (r.ok && r.url) { setCurrent(r.url); setUrl(r.url); } }
+    try { const r = await fn(); setMsg({ ok: r.ok, t: r.message }); if (r.ok && r.url) { setCurrent(r.url); setUrl(r.url); window.dispatchEvent(new CustomEvent("actes-frontend-changed", { detail: r.url })); } }
     catch (e) { setMsg({ ok: false, t: (e as Error).message }); }
     setBusy(false);
   };
