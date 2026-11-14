@@ -14,6 +14,245 @@ export type Database = {
   }
   public: {
     Tables: {
+      acts_engineers: {
+        Row: {
+          bio: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          governorate: string | null
+          grad_year: number | null
+          id: string
+          kind: string
+          name: string
+          phone: string
+          photo_url: string | null
+          projects: Json
+          qualifications: string | null
+          reject_reason: string | null
+          services: string[]
+          skills: string[]
+          specialty: string
+          status: string
+          tools: string[]
+          university: string | null
+          updated_at: string
+          years_exp: number
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          governorate?: string | null
+          grad_year?: number | null
+          id?: string
+          kind?: string
+          name: string
+          phone: string
+          photo_url?: string | null
+          projects?: Json
+          qualifications?: string | null
+          reject_reason?: string | null
+          services?: string[]
+          skills?: string[]
+          specialty: string
+          status?: string
+          tools?: string[]
+          university?: string | null
+          updated_at?: string
+          years_exp?: number
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          governorate?: string | null
+          grad_year?: number | null
+          id?: string
+          kind?: string
+          name?: string
+          phone?: string
+          photo_url?: string | null
+          projects?: Json
+          qualifications?: string | null
+          reject_reason?: string | null
+          services?: string[]
+          skills?: string[]
+          specialty?: string
+          status?: string
+          tools?: string[]
+          university?: string | null
+          updated_at?: string
+          years_exp?: number
+        }
+        Relationships: []
+      }
+      acts_review_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          resolved: boolean
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          resolved?: boolean
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          resolved?: boolean
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acts_review_reports_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "acts_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      acts_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          engineer_id: string
+          hidden: boolean
+          id: string
+          professionalism: number
+          punctuality: number
+          quality: number
+          rating: number
+          request_id: string
+          responsiveness: number
+          reviewer_name: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          engineer_id: string
+          hidden?: boolean
+          id?: string
+          professionalism: number
+          punctuality: number
+          quality: number
+          rating: number
+          request_id: string
+          responsiveness: number
+          reviewer_name?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          engineer_id?: string
+          hidden?: boolean
+          id?: string
+          professionalism?: number
+          punctuality?: number
+          quality?: number
+          rating?: number
+          request_id?: string
+          responsiveness?: number
+          reviewer_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acts_reviews_engineer_id_fkey"
+            columns: ["engineer_id"]
+            isOneToOne: false
+            referencedRelation: "acts_engineers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acts_reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "acts_service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      acts_service_requests: {
+        Row: {
+          admin_notes: string | null
+          attachments: Json
+          city: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string | null
+          description: string
+          engineer_id: string | null
+          governorate: string | null
+          id: string
+          location: string | null
+          name: string | null
+          phone: string
+          review_token: string
+          service: string
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          attachments?: Json
+          city?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string
+          engineer_id?: string | null
+          governorate?: string | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          phone: string
+          review_token?: string
+          service: string
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          attachments?: Json
+          city?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string
+          engineer_id?: string | null
+          governorate?: string | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          phone?: string
+          review_token?: string
+          service?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acts_service_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acts_service_requests_engineer_id_fkey"
+            columns: ["engineer_id"]
+            isOneToOne: false
+            referencedRelation: "acts_engineers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           key: string
