@@ -46,6 +46,11 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    // Stale page chunk after an update: reload once to fetch the current build.
+    if (/dynamically imported module|Importing a module script failed/i.test(String((error as Error | undefined)?.message)) && navigator.onLine) {
+      const last = Number(sessionStorage.getItem("actes-chunk-reload") ?? 0);
+      if (Date.now() - last > 30_000) { sessionStorage.setItem("actes-chunk-reload", String(Date.now())); window.location.reload(); }
+    }
   }, [error]);
 
   return (
@@ -141,7 +146,17 @@ function RootComponent() {
     void saveShell();
     const onOnline = () => void saveShell();
     window.addEventListener("online", onOnline);
-    return () => window.removeEventListener("online", onOnline);
+    // A page chunk from an older build/edit can vanish; reload once (per 30s) instead of a blank screen.
+    const onPreload = (e: Event) => {
+      if (!navigator.onLine) return;
+      const last = Number(sessionStorage.getItem("actes-chunk-reload") ?? 0);
+      if (Date.now() - last < 30_000) return;
+      sessionStorage.setItem("actes-chunk-reload", String(Date.now()));
+      e.preventDefault();
+      window.location.reload();
+    };
+    window.addEventListener("vite:preloadError", onPreload);
+    return () => { window.removeEventListener("online", onOnline); window.removeEventListener("vite:preloadError", onPreload); };
   }, []);
 
   return (
