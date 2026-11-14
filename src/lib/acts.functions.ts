@@ -207,3 +207,10 @@ export const actsModerate = createServerFn({ method: "POST" })
     await sb.from("acts_review_reports").update({ resolved: true }).eq("review_id", data.review_id);
     return { ok: true };
   });
+
+export const actsKwhPrice = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const sb = await db();
+    const { data: r } = await sb.from("app_settings").select("value").eq("key", "kwh_price").maybeSingle();
+    return { kwh_price: r ? Number(r.value) : 290 };
+  });

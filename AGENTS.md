@@ -22,3 +22,6 @@
 - Forced update: each build gets `__APP_VERSION__` (vite define), served by `/api/public/app-version`; `UpdateGate` in __root blocks the app until the service worker pulls the new build (skipped offline, one attempt per version per session).
 - The app is hosted only on its Lovable published URL (no Vercel); old hosts are listed in `LEGACY_FRONTEND_HOSTS` so `FrontendRedirect` moves installed copies opened there to the current frontend URL.
 - Day/night usage choice (bot step `day_night`, stored as `|N30/N50/N70` suffix on session `night_hours`) shifts the recommended system by battery; `tiersDayNight` in QuoteBuilder is its port — change both together.
+- ACTS platform lives at `/acts` in this project (public, phone-only, no customer accounts); its `acts_*` tables are server-only and touched only via `src/lib/acts.functions.ts`, and it is administered from the CRM "ACTS" tab — one database, staff mediate all customer↔engineer contact.
+- ACTS ratings use a per-request `review_token` link sent by staff once the request is "done"; a DB trigger + unique request_id enforce "only after completion, one per request".
+- The ACTS quote flow reuses QuoteBuilder's `tieredOptions`/`tiersDayNight`, so app, CRM and bot recommend the same systems.

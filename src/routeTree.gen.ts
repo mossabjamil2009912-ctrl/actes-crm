@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ActsRouteImport } from './routes/acts'
+import { Route as ActsRateTokenRouteImport } from './routes/acts.rate.$token'
 import { Route as ApiPublicAppVersionRouteImport } from './routes/api/public/app-version'
 import { Route as ApiPublicBotButtonLockRouteImport } from './routes/api/public/bot-button-lock'
 import { Route as ApiPublicBotCatalogRouteImport } from './routes/api/public/bot-catalog'
@@ -28,6 +30,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ActsRoute = ActsRouteImport.update({
+  id: '/acts',
+  path: '/acts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActsRateTokenRoute = ActsRateTokenRouteImport.update({
+  id: '/rate/$token',
+  path: '/rate/$token',
+  getParentRoute: () => ActsRoute,
 } as any)
 const ApiPublicAppVersionRoute = ApiPublicAppVersionRouteImport.update({
   id: '/api/public/app-version',
@@ -99,6 +111,8 @@ const ApiPublicJobsGithubBackupRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acts': typeof ActsRouteWithChildren
+  '/acts/rate/$token': typeof ActsRateTokenRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -115,6 +129,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acts': typeof ActsRouteWithChildren
+  '/acts/rate/$token': typeof ActsRateTokenRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -132,6 +148,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/acts': typeof ActsRouteWithChildren
+  '/acts/rate/$token': typeof ActsRateTokenRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -150,6 +168,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/acts'
+    | '/acts/rate/$token'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -166,6 +186,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/acts'
+    | '/acts/rate/$token'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -182,6 +204,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/acts'
+    | '/acts/rate/$token'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -199,6 +223,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActsRoute: typeof ActsRouteWithChildren
   ApiPublicAppVersionRoute: typeof ApiPublicAppVersionRoute
   ApiPublicBotButtonLockRoute: typeof ApiPublicBotButtonLockRoute
   ApiPublicBotCatalogRoute: typeof ApiPublicBotCatalogRoute
@@ -222,6 +247,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/acts': {
+      id: '/acts'
+      path: '/acts'
+      fullPath: '/acts'
+      preLoaderRoute: typeof ActsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/acts/rate/$token': {
+      id: '/acts/rate/$token'
+      path: '/rate/$token'
+      fullPath: '/acts/rate/$token'
+      preLoaderRoute: typeof ActsRateTokenRouteImport
+      parentRoute: typeof ActsRoute
     }
     '/api/public/app-version': {
       id: '/api/public/app-version'
@@ -317,8 +356,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ActsRouteChildren {
+  ActsRateTokenRoute: typeof ActsRateTokenRoute
+}
+
+const ActsRouteChildren: ActsRouteChildren = {
+  ActsRateTokenRoute: ActsRateTokenRoute,
+}
+
+const ActsRouteWithChildren = ActsRoute._addFileChildren(ActsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActsRoute: ActsRouteWithChildren,
   ApiPublicAppVersionRoute: ApiPublicAppVersionRoute,
   ApiPublicBotButtonLockRoute: ApiPublicBotButtonLockRoute,
   ApiPublicBotCatalogRoute: ApiPublicBotCatalogRoute,
