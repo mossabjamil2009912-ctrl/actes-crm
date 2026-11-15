@@ -16,3 +16,8 @@ Brand: **ACTES** (never ACTS). Published: https://actes-crm.lovable.app
 4. Publish; keep old hosts in LEGACY_FRONTEND_HOSTS.
 
 Rules and decisions: see `AGENTS.md`.
+
+## Latest state (2026-11-15)
+- Manual Android (Capacitor) update: settings gear → "عنوان خدمة الإدارة" + "تحديث التطبيق" (`src/lib/manual-update.ts`, `autoUpdate: false`). Release: build, then `node scripts/package-update.mjs <version>`, then publish.
+- ACTES standalone app linked via acts-bridge and tested (service request reached CRM chats + ACTES tab).
+- Full history of requests: see `AGENTS.md` rules + `.lovable/plan/` archived plans.
