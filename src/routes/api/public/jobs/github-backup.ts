@@ -16,6 +16,10 @@ const TABLES = [
   "app_settings",
   "bot_texts",
   "bot_steps",
+  "acts_engineers",
+  "acts_service_requests",
+  "acts_reviews",
+  "acts_review_reports",
 ] as const;
 
 function toBase64(text: string) {
