@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Phone, Copy, ExternalLink, Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Phone, MessageCircle, Copy, ExternalLink, Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { actsAdminData, actsSetEngineer, actsUpdateRequest, actsModerate, actsSaveEngineer, actsDeleteEngineer } from "@/lib/acts.functions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { offlineQuery } from "@/lib/offline-cache";
@@ -71,8 +71,10 @@ function EngList({ pw, rows, refresh, empty, onEdit }: { pw: string; rows: Data[
         {e.reject_reason && <p className="text-destructive">سبب الرفض: {e.reject_reason}</p>}
       </div>}
       <div className="mt-2 flex flex-wrap gap-1.5">
-        {e.status !== "approved" && <button className={`${sm} border-primary text-primary`} onClick={() => act(e.id, "approved")}>اعتماد</button>}
-        {e.status === "pending" && <button className={`${sm} border-border`} onClick={() => act(e.id, "rejected")}>رفض</button>}
+        {e.status === "pending" ? (e.phone
+          ? <a className={`${sm} inline-flex items-center gap-1 border-primary bg-primary text-primary-foreground`} target="_blank" rel="noreferrer" href={`https://wa.me/${e.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`مرحباً ${e.name}، معك فريق أكتس بخصوص طلب انضمامك إلى منصة ACTES.`)}`}><MessageCircle className="h-3 w-3" />فتح محادثة واتساب</a>
+          : <span className="text-xs text-muted-foreground">لا يوجد رقم هاتف</span>)
+          : e.status !== "approved" && <button className={`${sm} border-primary text-primary`} onClick={() => act(e.id, "approved")}>اعتماد</button>}
         {e.status === "approved" && <button className={`${sm} border-border`} onClick={() => act(e.id, "suspended")}>إيقاف</button>}
         <button className={`${sm} inline-flex items-center gap-1 border-border`} onClick={() => onEdit(e)}><Pencil className="h-3 w-3" />تعديل</button>
         <button className={`${sm} inline-flex items-center gap-1 border-destructive text-destructive`} onClick={async () => { if (!window.confirm(`حذف ${e.name} نهائياً؟`)) return; await del({ data: { pw, id: e.id } }); refresh(); }}><Trash2 className="h-3 w-3" />حذف</button>
