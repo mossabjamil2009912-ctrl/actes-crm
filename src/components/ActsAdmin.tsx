@@ -27,7 +27,7 @@ export function ActsAdmin({ pw }: { pw: string }) {
   return (
     <div dir="rtl" className="space-y-3 p-3">
       <div className="flex items-center justify-between"><h2 className="font-bold">منصة ACTS</h2>
-        <a href="/acts" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary underline"><ExternalLink className="h-3 w-3" />فتح تطبيق ACTS</a></div>
+        <a href="https://sunwise-engineer-network.lovable.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary underline"><ExternalLink className="h-3 w-3" />فتح تطبيق ACTS</a></div>
       <div className="flex gap-1.5 overflow-x-auto pb-1">{subs.map(([k, l, n]) => <button key={k} onClick={() => setSub(k)} className={`${sm} shrink-0 ${sub === k ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{l}{n > 0 && <span className="mr-1 rounded-full bg-destructive px-1.5 text-destructive-foreground">{n}</span>}</button>)}</div>
       {isLoading && <p className="text-sm text-muted-foreground">جارٍ التحميل...</p>}
       {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
@@ -82,7 +82,7 @@ function Requests({ pw, d, refresh }: { pw: string; d: Data; refresh: () => void
     const save = async (p: Partial<{ status: string; engineer_id: string | null; admin_notes: string }>) => {
       await upd({ data: { pw, id: r.id, status: (p.status ?? r.status) as "new", engineer_id: p.engineer_id !== undefined ? p.engineer_id : r.engineer_id, admin_notes: p.admin_notes ?? r.admin_notes } }); refresh();
     };
-    const link = `${window.location.origin}/acts/rate/${r.review_token}`;
+    const link = `https://sunwise-engineer-network.lovable.app/rate/${r.review_token}`;
     const atts = (r.attachments ?? []) as { url: string; name: string }[];
     return <div key={r.id} className={card}>
       <div className="flex justify-between"><b>{r.service}</b><span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar", { dateStyle: "short", timeStyle: "short" })}</span></div>

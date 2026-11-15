@@ -33,13 +33,13 @@ async function customerFor(phone: string, name: string | null, city: string | nu
 // ---------- Public ----------
 export const actsQuoteRequest = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
-    phone: Phone, name: s(120), city: s(80), path: z.enum(["res", "com"]), method: z.enum(["bill", "kwh", "diesel"]),
-    amount: z.number().positive().max(1e9), night: z.union([z.literal(30), z.literal(50), z.literal(70)]),
+    phone: Phone, name: s(120), city: s(80), path: z.string().trim().max(10), method: z.enum(["bill", "kwh", "diesel"]),
+    amount: z.number().positive().max(1e9), night: z.number().int().min(0).max(100),
     system: z.string().trim().min(1).max(300), reports: z.array(z.enum(["pvsyst", "sld"])).max(2),
   }).parse(d))
   .handler(async ({ data }) => {
     const unit = data.method === "bill" ? "ريال/شهر" : data.method === "kwh" ? "كيلو وات/شهر" : "لتر ديزل/شهر";
-    const msg = `📱 طلب عرض سعر من تطبيق ACTS\nالنوع: ${data.path === "res" ? "سكني" : "تجاري"}\nالمبلغ: ${data.amount} ${unit}\nالاستخدام: ليل ${data.night}% / نهار ${100 - data.night}%\nالمنظومة المختارة: ${data.system}${data.reports.length ? `\nطلب أيضاً: ${data.reports.join(" + ")}` : ""}`;
+    const msg = `📱 طلب عرض سعر من تطبيق ACTS\nالنوع: ${({ res: "سكني", com: "تجاري", ind: "صناعي", agr: "زراعي" } as Record<string, string>)[data.path] ?? data.path}\nالمبلغ: ${data.amount} ${unit}\nالاستخدام: ليل ${data.night}% / نهار ${100 - data.night}%\nالمنظومة المختارة: ${data.system}${data.reports.length ? `\nطلب أيضاً: ${data.reports.join(" + ")}` : ""}`;
     const id = await customerFor(data.phone, data.name, data.city, msg, "quote");
     const sb = await db();
     for (const kind of data.reports) {
@@ -213,4 +213,14 @@ export const actsKwhPrice = createServerFn({ method: "POST" })
     const sb = await db();
     const { data: r } = await sb.from("app_settings").select("value").eq("key", "kwh_price").maybeSingle();
     return { kwh_price: r ? Number(r.value) : 290 };
+  });
+
+export const actsReportRequest = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ kind: z.enum(["pvsyst", "sld"]), name: s(120), phone: Phone, city: s(80), system: z.string().trim().min(1).max(300), price: z.number().optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const msg = `📱 طلب ${data.kind === "pvsyst" ? "تقرير PVsyst" : "مخطط SLD"} من تطبيق ACTS\nالمنظومة: ${data.system}`;
+    const id = await customerFor(data.phone, data.name, data.city, msg, "quote");
+    const sb = await db();
+    await sb.from("report_requests").insert({ phone: digits(data.phone), customer_id: id, name: data.name, system_label: data.system, kind: data.kind, city: data.city });
+    return { ok: true };
   });

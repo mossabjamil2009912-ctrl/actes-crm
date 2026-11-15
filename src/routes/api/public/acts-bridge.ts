@@ -21,6 +21,7 @@ const ACTIONS: Record<string, (data: any) => Promise<unknown>> = {
   reviewInfo: (data) => A.actsReviewInfo({ data }),
   submitReview: (data) => A.actsSubmitReview({ data }),
   reportReview: (data) => A.actsReportReview({ data }),
+  reportRequest: (data) => A.actsReportRequest({ data }),
 };
 
 export const Route = createFileRoute("/api/public/acts-bridge")({
