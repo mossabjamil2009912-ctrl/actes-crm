@@ -29,8 +29,8 @@ export function ActsAdmin({ pw }: { pw: string }) {
   ];
   return (
     <div dir="rtl" className="space-y-3 p-3">
-      <div className="flex items-center justify-between"><h2 className="font-bold">منصة ACTS</h2>
-        <a href="https://sunwise-engineer-network.lovable.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary underline"><ExternalLink className="h-3 w-3" />فتح تطبيق ACTS</a></div>
+      <div className="flex items-center justify-between"><h2 className="font-bold">منصة ACTES</h2>
+        <a href="https://sunwise-engineer-network.lovable.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary underline"><ExternalLink className="h-3 w-3" />فتح تطبيق ACTES</a></div>
       <div className="flex gap-1.5 overflow-x-auto pb-1">{subs.map(([k, l, n]) => <button key={k} onClick={() => setSub(k)} className={`${sm} shrink-0 ${sub === k ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{l}{n > 0 && <span className="mr-1 rounded-full bg-destructive px-1.5 text-destructive-foreground">{n}</span>}</button>)}</div>
       {isLoading && <p className="text-sm text-muted-foreground">جارٍ التحميل...</p>}
       {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}

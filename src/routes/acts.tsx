@@ -12,9 +12,9 @@ import { SPECIALTIES, SERVICES, REG_SERVICES, GOVERNORATES, fileToB64 } from "@/
 export const Route = createFileRoute("/acts")({
   head: () => ({
     meta: [
-      { title: "ACTS — منصة أكتس لأنظمة الطاقة وحلولها" },
+      { title: "ACTES — منصة أكتس لأنظمة الطاقة وحلولها" },
       { name: "description", content: "اطلب عرض سعر لمنظومة طاقة، اختر مهندساً معتمداً، أو سجّل ككفاءة هندسية مع أكتس." },
-      { property: "og:title", content: "ACTS — منصة أكتس لأنظمة الطاقة وحلولها" },
+      { property: "og:title", content: "ACTES — منصة أكتس لأنظمة الطاقة وحلولها" },
       { property: "og:description", content: "عروض أسعار منظومات الطاقة، دليل المهندسين المعتمدين، واستقطاب الكفاءات الهندسية." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -329,7 +329,7 @@ function Join() {
               } catch (e) { setErr(errMsg(e)); } finally { setBusy(false); }
             }}>{busy ? "جارٍ الإرسال..." : "إرسال طلب التسجيل"}</button>}</div>
       </div>
-      <p className="text-center text-xs text-muted-foreground"><Link to="/acts" className="underline">ACTS</Link> — بياناتك تراجعها إدارة أكتس فقط</p>
+      <p className="text-center text-xs text-muted-foreground"><Link to="/acts" className="underline">ACTES</Link> — بياناتك تراجعها إدارة أكتس فقط</p>
     </div>
   );
 }
