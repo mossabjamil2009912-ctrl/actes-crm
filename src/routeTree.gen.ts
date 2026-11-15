@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActsRouteImport } from './routes/acts'
 import { Route as ActsRateTokenRouteImport } from './routes/acts.rate.$token'
+import { Route as ApiPublicActsBridgeRouteImport } from './routes/api/public/acts-bridge'
 import { Route as ApiPublicAppVersionRouteImport } from './routes/api/public/app-version'
 import { Route as ApiPublicBotButtonLockRouteImport } from './routes/api/public/bot-button-lock'
 import { Route as ApiPublicBotCatalogRouteImport } from './routes/api/public/bot-catalog'
@@ -40,6 +41,11 @@ const ActsRateTokenRoute = ActsRateTokenRouteImport.update({
   id: '/rate/$token',
   path: '/rate/$token',
   getParentRoute: () => ActsRoute,
+} as any)
+const ApiPublicActsBridgeRoute = ApiPublicActsBridgeRouteImport.update({
+  id: '/api/public/acts-bridge',
+  path: '/api/public/acts-bridge',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAppVersionRoute = ApiPublicAppVersionRouteImport.update({
   id: '/api/public/app-version',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/acts': typeof ActsRouteWithChildren
   '/acts/rate/$token': typeof ActsRateTokenRoute
+  '/api/public/acts-bridge': typeof ApiPublicActsBridgeRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/acts': typeof ActsRouteWithChildren
   '/acts/rate/$token': typeof ActsRateTokenRoute
+  '/api/public/acts-bridge': typeof ApiPublicActsBridgeRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/acts': typeof ActsRouteWithChildren
   '/acts/rate/$token': typeof ActsRateTokenRoute
+  '/api/public/acts-bridge': typeof ApiPublicActsBridgeRoute
   '/api/public/app-version': typeof ApiPublicAppVersionRoute
   '/api/public/bot-button-lock': typeof ApiPublicBotButtonLockRoute
   '/api/public/bot-catalog': typeof ApiPublicBotCatalogRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/'
     | '/acts'
     | '/acts/rate/$token'
+    | '/api/public/acts-bridge'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/'
     | '/acts'
     | '/acts/rate/$token'
+    | '/api/public/acts-bridge'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/'
     | '/acts'
     | '/acts/rate/$token'
+    | '/api/public/acts-bridge'
     | '/api/public/app-version'
     | '/api/public/bot-button-lock'
     | '/api/public/bot-catalog'
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActsRoute: typeof ActsRouteWithChildren
+  ApiPublicActsBridgeRoute: typeof ApiPublicActsBridgeRoute
   ApiPublicAppVersionRoute: typeof ApiPublicAppVersionRoute
   ApiPublicBotButtonLockRoute: typeof ApiPublicBotButtonLockRoute
   ApiPublicBotCatalogRoute: typeof ApiPublicBotCatalogRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/acts/rate/$token'
       preLoaderRoute: typeof ActsRateTokenRouteImport
       parentRoute: typeof ActsRoute
+    }
+    '/api/public/acts-bridge': {
+      id: '/api/public/acts-bridge'
+      path: '/api/public/acts-bridge'
+      fullPath: '/api/public/acts-bridge'
+      preLoaderRoute: typeof ApiPublicActsBridgeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/app-version': {
       id: '/api/public/app-version'
@@ -369,6 +389,7 @@ const ActsRouteWithChildren = ActsRoute._addFileChildren(ActsRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActsRoute: ActsRouteWithChildren,
+  ApiPublicActsBridgeRoute: ApiPublicActsBridgeRoute,
   ApiPublicAppVersionRoute: ApiPublicAppVersionRoute,
   ApiPublicBotButtonLockRoute: ApiPublicBotButtonLockRoute,
   ApiPublicBotCatalogRoute: ApiPublicBotCatalogRoute,

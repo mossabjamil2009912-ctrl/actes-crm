@@ -25,3 +25,4 @@
 - ACTS platform lives at `/acts` in this project (public, phone-only, no customer accounts); its `acts_*` tables are server-only and touched only via `src/lib/acts.functions.ts`, and it is administered from the CRM "ACTS" tab — one database, staff mediate all customer↔engineer contact.
 - ACTS ratings use a per-request `review_token` link sent by staff once the request is "done"; a DB trigger + unique request_id enforce "only after completion, one per request".
 - The ACTS quote flow reuses QuoteBuilder's `tieredOptions`/`tiersDayNight`, so app, CRM and bot recommend the same systems.
+- ACTS standalone app (separate Lovable project) talks to the CRM only through `/api/public/acts-bridge` (GET catalog/presets/kWh, POST {action,data} wrapping the public functions in `src/lib/acts.functions.ts`) — so both apps share one logic and database.
