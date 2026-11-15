@@ -8,9 +8,9 @@ import { actsReviewInfo, actsSubmitReview } from "@/lib/acts.functions";
 export const Route = createFileRoute("/acts/rate/$token")({
   head: () => ({
     meta: [
-      { title: "تقييم المهندس — ACTS" },
+      { title: "تقييم المهندس — ACTES" },
       { name: "description", content: "قيّم تجربتك مع مهندس أكتس بعد اكتمال طلب الخدمة." },
-      { property: "og:title", content: "تقييم المهندس — ACTS" },
+      { property: "og:title", content: "تقييم المهندس — ACTES" },
       { property: "og:description", content: "شاركنا رأيك في جودة العمل والالتزام والاحترافية." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
