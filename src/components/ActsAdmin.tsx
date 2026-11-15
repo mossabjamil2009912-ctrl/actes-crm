@@ -63,7 +63,7 @@ function EngList({ pw, rows, refresh, empty, onEdit }: { pw: string; rows: Data[
         <div className="flex-1"><p className="font-bold">{e.name} <span className="text-xs font-normal text-muted-foreground">({e.kind === "student" ? "طالب" : "مهندس"})</span></p>
           <p className="text-xs text-muted-foreground">{e.specialty} · {[e.governorate, e.city].filter(Boolean).join(" - ")} · {ENG_STATUS[e.status] ?? e.status}</p></div></button>
       {open === e.id && <div className="mt-2 space-y-1 border-t border-border pt-2 text-xs">
-        <p className="flex items-center gap-1"><Phone className="h-3 w-3" /><a href={`https://wa.me/${e.phone}`} target="_blank" rel="noreferrer" dir="ltr">{e.phone}</a>{e.email && ` · ${e.email}`}</p>
+        <p className="flex items-center gap-1">{e.phone && <><Phone className="h-3 w-3" /><a href={`https://wa.me/${e.phone}`} target="_blank" rel="noreferrer" dir="ltr">{e.phone}</a></>}{e.email && ` · ${e.email}`}</p>
         <p>الدراسة: {[e.university, e.grad_year, e.qualifications].filter(Boolean).join(" · ") || "—"}</p>
         <p>الخبرة: {e.years_exp} سنوات</p><p>المهارات: {e.skills.join("، ") || "—"}</p><p>البرامج: {e.tools.join("، ") || "—"}</p><p>الخدمات: {e.services.join("، ") || "—"}</p>
         {e.bio && <p>نبذة: {e.bio}</p>}
@@ -137,7 +137,7 @@ function Talent({ d }: { d: Data }) {
       <select className="rounded-lg border border-border bg-card p-1.5 text-xs" value={kind} onChange={(e) => setKind(e.target.value)}><option value="">الكل</option><option value="engineer">مهندسون</option><option value="student">طلاب</option></select></div>
     <p className="text-xs text-muted-foreground">{rows.length} نتيجة</p>
     {rows.map((e) => <div key={e.id} className={card}><b>{e.name}</b> <span className="text-xs text-muted-foreground">— {e.kind === "student" ? "طالب" : "مهندس"} · {ENG_STATUS[e.status]}</span>
-      <p className="text-xs">{e.specialty} · {[e.governorate, e.city].filter(Boolean).join(" - ")} · {e.years_exp} سنوات · <a href={`https://wa.me/${e.phone}`} target="_blank" rel="noreferrer" dir="ltr">{e.phone}</a></p>
+      <p className="text-xs">{e.specialty} · {[e.governorate, e.city].filter(Boolean).join(" - ")} · {e.years_exp} سنوات{e.phone && <> · <a href={`https://wa.me/${e.phone}`} target="_blank" rel="noreferrer" dir="ltr">{e.phone}</a></>}</p>
       <p className="text-xs text-muted-foreground">{[...e.skills, ...e.tools].join("، ")}</p></div>)}
   </div>;
 }
