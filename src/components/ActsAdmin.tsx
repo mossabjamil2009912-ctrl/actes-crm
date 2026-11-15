@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Phone, Copy, ExternalLink, Search } from "lucide-react";
-import { actsAdminData, actsSetEngineer, actsUpdateRequest, actsModerate } from "@/lib/acts.functions";
+import { Phone, Copy, ExternalLink, Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { actsAdminData, actsSetEngineer, actsUpdateRequest, actsModerate, actsSaveEngineer, actsDeleteEngineer } from "@/lib/acts.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { offlineQuery } from "@/lib/offline-cache";
-import { REQ_STATUS, ENG_STATUS, SPECIALTIES } from "@/lib/acts-data";
+import { REQ_STATUS, ENG_STATUS, SPECIALTIES, GOVERNORATES, REG_SERVICES } from "@/lib/acts-data";
 
 type Data = Awaited<ReturnType<typeof actsAdminData>>;
+type Eng = Data["engineers"][number];
 type Sub = "regs" | "engineers" | "requests" | "reviews" | "talent";
 const card = "rounded-xl border border-border bg-background p-3 text-sm";
 const sm = "rounded-full border px-2.5 py-1 text-xs font-semibold";
@@ -17,6 +19,7 @@ export function ActsAdmin({ pw }: { pw: string }) {
   const { data, isLoading, error } = useQuery(offlineQuery({ queryKey: ["acts-admin"], queryFn: () => load({ data: { pw } }) }));
   const refresh = () => qc.invalidateQueries({ queryKey: ["acts-admin"] });
   const [sub, setSub] = useState<Sub>("regs");
+  const [edit, setEdit] = useState<Eng | "new" | null>(null);
   const d: Data = data ?? { engineers: [], requests: [], reviews: [], reports: [] };
   const pending = d.engineers.filter((e) => e.status === "pending");
   const openReports = d.reports.filter((r) => !r.resolved);
@@ -31,17 +34,20 @@ export function ActsAdmin({ pw }: { pw: string }) {
       <div className="flex gap-1.5 overflow-x-auto pb-1">{subs.map(([k, l, n]) => <button key={k} onClick={() => setSub(k)} className={`${sm} shrink-0 ${sub === k ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{l}{n > 0 && <span className="mr-1 rounded-full bg-destructive px-1.5 text-destructive-foreground">{n}</span>}</button>)}</div>
       {isLoading && <p className="text-sm text-muted-foreground">جارٍ التحميل...</p>}
       {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
-      {sub === "regs" && <EngList pw={pw} rows={pending} refresh={refresh} empty="لا توجد طلبات تسجيل جديدة." />}
-      {sub === "engineers" && <EngList pw={pw} rows={d.engineers.filter((e) => e.status !== "pending" && e.kind === "engineer")} refresh={refresh} empty="لا يوجد مهندسون بعد." />}
+      {sub === "regs" && <EngList onEdit={setEdit} pw={pw} rows={pending} refresh={refresh} empty="لا توجد طلبات تسجيل جديدة." />}
+      {sub === "engineers" && <div className="flex justify-end"><button className={`${sm} inline-flex items-center gap-1 border-primary text-primary`} onClick={() => setEdit("new")}><Plus className="h-3 w-3" />إضافة مهندس</button></div>}
+      {sub === "engineers" && <EngList onEdit={setEdit} pw={pw} rows={d.engineers.filter((e) => e.status !== "pending" && e.kind === "engineer")} refresh={refresh} empty="لا يوجد مهندسون بعد." />}
       {sub === "requests" && <Requests pw={pw} d={d} refresh={refresh} />}
       {sub === "reviews" && <Reviews pw={pw} d={d} refresh={refresh} />}
       {sub === "talent" && <Talent d={d} />}
+      {edit && <EngForm pw={pw} eng={edit === "new" ? null : edit} onClose={() => setEdit(null)} refresh={refresh} />}
     </div>
   );
 }
 
-function EngList({ pw, rows, refresh, empty }: { pw: string; rows: Data["engineers"]; refresh: () => void; empty: string }) {
+function EngList({ pw, rows, refresh, empty, onEdit }: { pw: string; rows: Data["engineers"]; refresh: () => void; empty: string; onEdit: (e: Eng) => void }) {
   const set = useServerFn(actsSetEngineer);
+  const del = useServerFn(actsDeleteEngineer);
   const [open, setOpen] = useState<string | null>(null);
   const act = async (id: string, status: "approved" | "rejected" | "suspended" | "pending") => {
     const reason = status === "rejected" ? window.prompt("سبب الرفض") : null;
@@ -68,6 +74,8 @@ function EngList({ pw, rows, refresh, empty }: { pw: string; rows: Data["enginee
         {e.status !== "approved" && <button className={`${sm} border-primary text-primary`} onClick={() => act(e.id, "approved")}>اعتماد</button>}
         {e.status === "pending" && <button className={`${sm} border-border`} onClick={() => act(e.id, "rejected")}>رفض</button>}
         {e.status === "approved" && <button className={`${sm} border-border`} onClick={() => act(e.id, "suspended")}>إيقاف</button>}
+        <button className={`${sm} inline-flex items-center gap-1 border-border`} onClick={() => onEdit(e)}><Pencil className="h-3 w-3" />تعديل</button>
+        <button className={`${sm} inline-flex items-center gap-1 border-destructive text-destructive`} onClick={async () => { if (!window.confirm(`حذف ${e.name} نهائياً؟`)) return; await del({ data: { pw, id: e.id } }); refresh(); }}><Trash2 className="h-3 w-3" />حذف</button>
       </div>
     </div>;
   })}</div>;
@@ -132,4 +140,62 @@ function Talent({ d }: { d: Data }) {
       <p className="text-xs">{e.specialty} · {[e.governorate, e.city].filter(Boolean).join(" - ")} · {e.years_exp} سنوات · <a href={`https://wa.me/${e.phone}`} target="_blank" rel="noreferrer" dir="ltr">{e.phone}</a></p>
       <p className="text-xs text-muted-foreground">{[...e.skills, ...e.tools].join("، ")}</p></div>)}
   </div>;
+}
+
+const inp = "w-full rounded-lg border border-border bg-card p-2 text-sm";
+const list = (v: string) => v.split(/[،,]/).map((x) => x.trim()).filter(Boolean);
+
+function L({ t, children }: { t: string; children: React.ReactNode }) { return <label className="block space-y-1 text-xs font-semibold"><span>{t}</span>{children}</label>; }
+
+function EngForm({ pw, eng, onClose, refresh }: { pw: string; eng: Eng | null; onClose: () => void; refresh: () => void }) {
+  const save = useServerFn(actsSaveEngineer);
+  const [f, setF] = useState({
+    name: eng?.name ?? "", phone: eng?.phone ?? "", email: eng?.email ?? "", photo_url: eng?.photo_url ?? "",
+    kind: (eng?.kind ?? "engineer") as "engineer" | "student", status: (eng?.status ?? "approved") as "approved",
+    specialty: eng?.specialty ?? SPECIALTIES[0], university: eng?.university ?? "", grad_year: eng?.grad_year ? String(eng.grad_year) : "",
+    qualifications: eng?.qualifications ?? "", years_exp: String(eng?.years_exp ?? 0), governorate: eng?.governorate ?? "", city: eng?.city ?? "",
+    skills: (eng?.skills ?? []).join("، "), tools: (eng?.tools ?? []).join("، "), services: eng?.services ?? [], bio: eng?.bio ?? "",
+  });
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState("");
+  const u = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
+  const submit = async () => {
+    setBusy(true); setErr("");
+    try {
+      await save({ data: { pw, id: eng?.id ?? null, ...f, grad_year: f.grad_year ? Number(f.grad_year) : null, years_exp: Number(f.years_exp) || 0, skills: list(f.skills), tools: list(f.tools) } });
+      refresh(); onClose();
+    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  return <Dialog open onOpenChange={(o) => !o && onClose()}>
+    <DialogContent dir="rtl" className="max-h-[90vh] overflow-y-auto">
+      <DialogHeader><DialogTitle>{eng ? "تعديل مهندس" : "إضافة مهندس"}</DialogTitle></DialogHeader>
+      <div className="grid gap-2">
+        <L t="الاسم"><input className={inp} value={f.name} onChange={u("name")} /></L>
+        <div className="grid grid-cols-2 gap-2">
+          <L t="الهاتف"><input className={inp} dir="ltr" value={f.phone} onChange={u("phone")} /></L>
+          <L t="البريد"><input className={inp} dir="ltr" value={f.email} onChange={u("email")} /></L>
+          <L t="النوع"><select className={inp} value={f.kind} onChange={u("kind")}><option value="engineer">مهندس</option><option value="student">طالب</option></select></L>
+          <L t="الحالة"><select className={inp} value={f.status} onChange={u("status")}>{Object.entries(ENG_STATUS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></L>
+        </div>
+        <L t="التخصص"><select className={inp} value={f.specialty} onChange={u("specialty")}>{[...new Set([...SPECIALTIES, f.specialty])].map((x) => <option key={x}>{x}</option>)}</select></L>
+        <div className="grid grid-cols-2 gap-2">
+          <L t="الجامعة"><input className={inp} value={f.university} onChange={u("university")} /></L>
+          <L t="سنة التخرج"><input className={inp} inputMode="numeric" value={f.grad_year} onChange={u("grad_year")} /></L>
+          <L t="المؤهل"><input className={inp} value={f.qualifications} onChange={u("qualifications")} /></L>
+          <L t="سنوات الخبرة"><input className={inp} inputMode="numeric" value={f.years_exp} onChange={u("years_exp")} /></L>
+          <L t="المحافظة"><select className={inp} value={f.governorate} onChange={u("governorate")}><option value="">—</option>{GOVERNORATES.map((x) => <option key={x}>{x}</option>)}</select></L>
+          <L t="المدينة"><input className={inp} value={f.city} onChange={u("city")} /></L>
+        </div>
+        <L t="المهارات (افصل بفاصلة)"><input className={inp} value={f.skills} onChange={u("skills")} /></L>
+        <L t="البرامج والأدوات (افصل بفاصلة)"><input className={inp} value={f.tools} onChange={u("tools")} /></L>
+        <div className="space-y-1 text-xs font-semibold"><span>الخدمات</span><div className="flex flex-wrap gap-1.5">{REG_SERVICES.map((x) => {
+          const on = f.services.includes(x);
+          return <button key={x} type="button" className={`${sm} ${on ? "border-primary bg-primary text-primary-foreground" : "border-border"}`} onClick={() => setF({ ...f, services: on ? f.services.filter((y) => y !== x) : [...f.services, x] })}>{x}</button>;
+        })}</div></div>
+        <L t="رابط الصورة"><input className={inp} dir="ltr" value={f.photo_url} onChange={u("photo_url")} /></L>
+        <L t="نبذة"><textarea className={inp} rows={3} value={f.bio} onChange={u("bio")} /></L>
+        {err && <p className="text-xs text-destructive">{err}</p>}
+        <button disabled={busy || f.name.trim().length < 2} onClick={submit} className="rounded-lg bg-primary p-2 text-sm font-bold text-primary-foreground disabled:opacity-50">{busy ? "جارٍ الحفظ..." : "حفظ"}</button>
+      </div>
+    </DialogContent>
+  </Dialog>;
 }

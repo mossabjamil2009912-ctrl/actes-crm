@@ -224,3 +224,39 @@ export const actsReportRequest = createServerFn({ method: "POST" })
     await sb.from("report_requests").insert({ phone: digits(data.phone), customer_id: id, name: data.name, system_label: data.system, kind: data.kind, city: data.city });
     return { ok: true };
   });
+
+const EngInput = z.object({
+  pw: z.string(), id: z.string().uuid().optional().nullable(),
+  kind: z.enum(["engineer", "student"]), status: z.enum(["pending", "approved", "rejected", "suspended"]),
+  name: z.string().trim().min(2).max(120), phone: z.string().trim().max(20), email: s(200), photo_url: s(1000),
+  specialty: z.string().trim().min(2).max(120), university: s(200), grad_year: z.number().int().min(1950).max(2100).nullable(),
+  qualifications: s(300), years_exp: z.number().int().min(0).max(70),
+  skills: z.array(z.string().trim().min(1).max(120)).max(50), tools: z.array(z.string().trim().min(1).max(120)).max(50), services: z.array(z.string().trim().min(1).max(120)).max(20),
+  governorate: s(100), city: s(100), bio: s(2000),
+});
+
+export const actsSaveEngineer = createServerFn({ method: "POST" })
+  .inputValidator((d) => EngInput.parse(d))
+  .handler(async ({ data }) => {
+    check(data.pw);
+    const sb = await db();
+    const { pw: _p, id, ...row } = data;
+    const v = { ...row, phone: digits(row.phone), updated_at: new Date().toISOString() };
+    const { error } = id ? await sb.from("acts_engineers").update(v).eq("id", id) : await sb.from("acts_engineers").insert(v);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const actsDeleteEngineer = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ pw: z.string(), id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    check(data.pw);
+    const sb = await db();
+    const { data: revs } = await sb.from("acts_reviews").select("id").eq("engineer_id", data.id);
+    const ids = (revs ?? []).map((r) => r.id);
+    if (ids.length) { await sb.from("acts_review_reports").delete().in("review_id", ids); await sb.from("acts_reviews").delete().in("id", ids); }
+    await sb.from("acts_service_requests").update({ engineer_id: null }).eq("engineer_id", data.id);
+    const { error } = await sb.from("acts_engineers").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
