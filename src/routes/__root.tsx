@@ -5,6 +5,7 @@ import { get as idbGet, set as idbSet, del as idbDel } from "idb-keyval";
 import { registerOfflineWorker } from "../lib/pwa";
 import { UpdateGate } from "../components/UpdateGate";
 import { saveShell } from "../lib/offline-shell";
+import { markAppReady } from "../lib/manual-update";
 import {
   Outlet,
   Link,
@@ -44,6 +45,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
+  useEffect(() => { void markAppReady(); }, []);
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
     // Stale page chunk after an update: reload once to fetch the current build.
